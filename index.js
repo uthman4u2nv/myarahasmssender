@@ -10,7 +10,16 @@ const logConfiguration = {
         new winston.transports.File({
             filename: 'logs/'+fileName
         })
-    ]
+    ],
+    format: winston.format.combine(
+        winston.format.label({
+            label: `Label🏷️`
+        }),
+        winston.format.timestamp({
+           format: 'MMM-DD-YYYY HH:mm:ss'
+       }),
+        winston.format.printf(info => `${info.level}: ${info.label}: ${[info.timestamp]}: ${info.message}`),
+    )
 };
 const logger = winston.createLogger(logConfiguration);
 var axios = require('axios');
@@ -33,7 +42,7 @@ const SendSMS=async (phone,sms)=>{
         "type":"plain",
         "channel":"dnd"
     }
-    logger.info(new Date().toLocaleString()+JSON.stringify(body));
+    logger.info(JSON.stringify(body));
       try{
         var config = {
             method: 'POST',
@@ -45,12 +54,13 @@ const SendSMS=async (phone,sms)=>{
           };
           axios(config)
       .then(async function (response) {
-        console.log(JSON.stringify(response.data));
-        logger.info(JSON.stringify(response.data));
-        if(response.data){
+        //console.log(JSON.stringify(response.data));
+        logger.info(response.data);
+        logger.info(JSON.stringify(response.data.message));
+        if(response.data.message){
             let resp={
                 ResponseCode:"00",
-                ResponseMessage:response.message,
+                ResponseMessage:response.data.message,
                 
             }
             console.log(resp)
